@@ -1,13 +1,13 @@
 /* tslint:disable:no-console */
 import { CargoDeliveryRequest } from '@relaycorp/relaynet-core';
-// import * as fs from 'fs';
+import * as fs from 'fs';
 
 import { CogRPCClient } from './lib/client';
 
 // Config:
 const SERVER = '127.0.0.1:8081';
-// const CERT_PATH = '/tmp/cert.pem';
-// const USE_TLS = false;
+const CERT_PATH = '/tmp/cert.pem';
+const USE_TLS = true;
 // End of config
 
 const LARGE_DUMMY_CARGO = Buffer.from('A'.repeat(8_388_608)); // 8 MiB
@@ -16,7 +16,7 @@ const DUMMY_CCA = Buffer.from('This is a CCA.');
 
 async function main(): Promise<void> {
   console.log('About to create client');
-  const client = new CogRPCClient(SERVER, false);
+  const client = new CogRPCClient(SERVER, USE_TLS, fs.readFileSync(CERT_PATH));
 
   console.log('About to deliver cargo');
   for await (const ack of client.deliverCargo(generateDummyCargo())) {
