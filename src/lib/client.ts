@@ -1,4 +1,3 @@
-/* tslint:disable:no-console */
 import { CargoDeliveryRequest, RelaynetError } from '@relaycorp/relaynet-core';
 import * as grpc from 'grpc';
 import pipe from 'it-pipe';
@@ -36,8 +35,6 @@ export class CogRPCClient {
   public async *deliverCargo(
     cargoRelay: IterableIterator<CargoDeliveryRequest>,
   ): AsyncIterable<string> {
-    console.log('About to start delivery');
-
     // tslint:disable-next-line:readonly-keyword
     const pendingAckIds: { [key: string]: string } = {};
 
@@ -57,11 +54,8 @@ export class CogRPCClient {
     async function* deliverCargo(
       source: AsyncIterable<CargoDeliveryAck>,
     ): AsyncIterable<CargoDeliveryAck> {
-      console.log('Starting deliverCargo()');
       for (const relay of cargoRelay) {
-        console.log('Delivering cargo', relay.localId);
         if (hasCallEnded) {
-          console.log('Call already ended');
           break;
         }
         const deliveryId = uuid();

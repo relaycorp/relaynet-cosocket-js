@@ -32,10 +32,8 @@ async function main(): Promise<void> {
 }
 
 function* generateDummyCargo(): IterableIterator<CargoDeliveryRequest> {
-  console.log('Starting generateDummyCargo()')
   // tslint:disable-next-line:no-let
   for (let i = 0; i < 10; i++) {
-    console.log('Yielding', i)
     yield { cargo: LARGE_DUMMY_CARGO, localId: `local-id-${i}` };
   }
 }
