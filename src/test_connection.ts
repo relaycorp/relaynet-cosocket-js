@@ -12,7 +12,7 @@ const USE_TLS = true;
 
 const LARGE_DUMMY_CARGO = Buffer.from('A'.repeat(8_388_608)); // 8 MiB
 
-const DUMMY_CCA = Buffer.from('This is a CCA.');
+const DUMMY_CCA = Buffer.from('B'.repeat(1_300));
 
 async function main(): Promise<void> {
   console.log('About to create client');
