@@ -1,3 +1,4 @@
+/* tslint:disable:no-console */
 import { CargoDeliveryRequest, RelaynetError } from '@relaycorp/relaynet-core';
 import * as grpc from 'grpc';
 import pipe from 'it-pipe';
@@ -19,9 +20,13 @@ export class CogRPCError extends RelaynetError {}
 export class CogRPCClient {
   protected readonly grpcClient: InstanceType<typeof CargoRelayClient>;
 
-  constructor(serverAddress: string, useTls = true) {
-    const credentials = useTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
-    this.grpcClient = new CargoRelayClient(serverAddress, credentials);
+  constructor(serverAddress: string, useTls = true, cert?: Buffer) {
+    const credentials = useTls
+      ? grpc.credentials.createSsl(cert)
+      : grpc.credentials.createInsecure();
+    this.grpcClient = new CargoRelayClient(serverAddress, credentials, {
+      'grpc.max_receive_message_length': 9_000_000,
+    });
   }
 
   public close(): void {
@@ -31,6 +36,8 @@ export class CogRPCClient {
   public async *deliverCargo(
     cargoRelay: IterableIterator<CargoDeliveryRequest>,
   ): AsyncIterable<string> {
+    console.log('About to start delivery');
+
     // tslint:disable-next-line:readonly-keyword
     const pendingAckIds: { [key: string]: string } = {};
 
@@ -50,8 +57,11 @@ export class CogRPCClient {
     async function* deliverCargo(
       source: AsyncIterable<CargoDeliveryAck>,
     ): AsyncIterable<CargoDeliveryAck> {
+      console.log('Starting deliverCargo()');
       for (const relay of cargoRelay) {
+        console.log('Delivering cargo', relay.localId);
         if (hasCallEnded) {
+          console.log('Call already ended');
           break;
         }
         const deliveryId = uuid();
@@ -74,6 +84,10 @@ export class CogRPCClient {
         // tslint:disable-next-line:no-delete no-object-mutation
         delete pendingAckIds[chunk.id];
         yield localId;
+
+        if (Object.getOwnPropertyNames(pendingAckIds).length === 0) {
+          break;
+        }
       }
       if (Object.getOwnPropertyNames(pendingAckIds).length !== 0) {
         throw new CogRPCError('Server did not acknowledge all cargo deliveries');
@@ -86,6 +100,33 @@ export class CogRPCClient {
       throw error instanceof CogRPCError
         ? error
         : new CogRPCError(error, 'Unexpected error while delivering cargo');
+    } finally {
+      call.end();
+    }
+  }
+
+  public async *collectCargo(cca: Buffer): AsyncIterable<Buffer> {
+    const deadline = new Date();
+    deadline.setSeconds(deadline.getSeconds() + DEADLINE_SECONDS);
+    const metadata = new grpc.Metadata();
+    metadata.add('Authorization', `Relaynet-CCA ${cca.toString('base64')}`);
+    const call = ((this.grpcClient as unknown) as CargoRelayClientMethodSet).collectCargo(
+      metadata,
+      { deadline },
+    );
+
+    async function* extractCargo(source: AsyncIterable<CargoDelivery>): AsyncIterable<Buffer> {
+      for await (const delivery of source) {
+        yield delivery.cargo;
+      }
+    }
+
+    try {
+      yield* await pipe(toIterable.source(call), extractCargo);
+    } catch (error) {
+      throw error instanceof CogRPCError
+        ? error
+        : new CogRPCError(error, 'Unexpected error while collecting cargo');
     } finally {
       call.end();
     }
