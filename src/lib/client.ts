@@ -21,7 +21,11 @@ export class CogRPCClient {
 
   constructor(serverAddress: string, useTls = true, cert?: Buffer) {
     const credentials = useTls
-      ? grpc.credentials.createSsl(cert)
+      ? grpc.credentials.createSsl(cert, undefined, undefined, {
+          checkServerIdentity(_hostname: string, _cert: grpc.Certificate): undefined {
+            return;
+          },
+        })
       : grpc.credentials.createInsecure();
     this.grpcClient = new CargoRelayClient(serverAddress, credentials, {
       'grpc.max_receive_message_length': 9_000_000,
