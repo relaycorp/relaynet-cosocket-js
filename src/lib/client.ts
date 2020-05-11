@@ -1,3 +1,4 @@
+/* tslint:disable:no-console */
 import { CargoDeliveryRequest, RelaynetError } from '@relaycorp/relaynet-core';
 import * as grpc from 'grpc';
 import pipe from 'it-pipe';
@@ -37,7 +38,7 @@ export class CogRPCClient {
   }
 
   public async *deliverCargo(
-    cargoRelay: IterableIterator<CargoDeliveryRequest>,
+    cargoRelay: AsyncIterable<CargoDeliveryRequest>,
   ): AsyncIterable<string> {
     // tslint:disable-next-line:readonly-keyword
     const pendingAckIds: { [key: string]: string } = {};
@@ -51,6 +52,8 @@ export class CogRPCClient {
       },
     );
 
+    await sleep(2000);
+
     // tslint:disable-next-line:no-let
     let hasCallEnded = false;
     call.on('end', () => (hasCallEnded = true));
@@ -58,12 +61,13 @@ export class CogRPCClient {
     async function* deliverCargo(
       source: AsyncIterable<CargoDeliveryAck>,
     ): AsyncIterable<CargoDeliveryAck> {
-      for (const relay of cargoRelay) {
+      for await (const relay of cargoRelay) {
         if (hasCallEnded) {
           break;
         }
         const deliveryId = uuid();
         const delivery: CargoDelivery = { id: deliveryId, cargo: relay.cargo };
+        console.log('Delivering', relay.localId);
         call.write(delivery);
         // tslint:disable-next-line:no-object-mutation
         pendingAckIds[deliveryId] = relay.localId;
@@ -129,4 +133,9 @@ export class CogRPCClient {
       call.end();
     }
   }
+}
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
 }

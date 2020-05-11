@@ -174,7 +174,7 @@ describe('CogRPCClient', () => {
 
       const localId = 'original-id';
 
-      function* generateRelays(): IterableIterator<CargoDeliveryRequest> {
+      async function* generateRelays(): AsyncIterable<CargoDeliveryRequest> {
         yield { localId, cargo: Buffer.from('foo') };
       }
 
@@ -201,7 +201,7 @@ describe('CogRPCClient', () => {
 
       const localId = 'original-id';
 
-      function* generateRelays(): IterableIterator<CargoDeliveryRequest> {
+      async function* generateRelays(): AsyncIterable<CargoDeliveryRequest> {
         yield { localId, cargo: Buffer.from('foo') };
         mockCargoRelayStream.emit('end');
         yield { localId: 'should not be sent', cargo: Buffer.from('bar') };
@@ -248,9 +248,9 @@ describe('CogRPCClient', () => {
       expect(mockCargoRelayStream.end).toBeCalledTimes(1);
     });
 
-    function* generateCargoRelays(
+    async function* generateCargoRelays(
       cargoRelays: readonly CargoDeliveryRequest[],
-    ): IterableIterator<CargoDeliveryRequest> {
+    ): AsyncIterable<CargoDeliveryRequest> {
       yield* cargoRelays;
     }
   });
