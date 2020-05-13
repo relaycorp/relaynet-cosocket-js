@@ -17,6 +17,8 @@ const CERT_PATH = '/tmp/cert.pem';
 const USE_TLS = true;
 // End of config
 
+const FIVE_MINS_AGO = new Date();
+FIVE_MINS_AGO.setMinutes(FIVE_MINS_AGO.getMinutes() - 5);
 const TOMORROW = new Date();
 TOMORROW.setDate(TOMORROW.getDate() + 1);
 
@@ -29,6 +31,7 @@ async function main(): Promise<void> {
     issuerPrivateKey: privateGatewayKeyPair.privateKey,
     subjectPublicKey: privateGatewayKeyPair.publicKey,
     validityEndDate: TOMORROW,
+    validityStartDate: FIVE_MINS_AGO,
   });
 
   console.log('About to deliver cargo');
@@ -53,10 +56,15 @@ async function* generateCargo(
   senderPrivateKey: CryptoKey,
   senderCertificate: Certificate,
 ): AsyncIterable<CargoDeliveryRequest> {
+  const oneMinuteAgo = new Date();
+  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
   // tslint:disable-next-line:no-let
   for (let i = 0; i < 10; i++) {
     console.log('Generating cargo', i);
-    const cargo = new Cargo('https://example.com', senderCertificate, Buffer.from([i]));
+    const cargo = new Cargo('https://example.com', senderCertificate, Buffer.from([i]), {
+      date: oneMinuteAgo,
+      ttl: 86_4000,
+    });
     const cargoSerialized = Buffer.from(await cargo.serialize(senderPrivateKey));
     yield { cargo: cargoSerialized, localId: i.toString() };
   }
