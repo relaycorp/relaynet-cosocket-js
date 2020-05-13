@@ -19,6 +19,10 @@ const USE_TLS = true;
 
 const FIVE_MINS_AGO = new Date();
 FIVE_MINS_AGO.setMinutes(FIVE_MINS_AGO.getMinutes() - 5);
+
+const oneMinuteAgo = new Date();
+oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
+
 const TOMORROW = new Date();
 TOMORROW.setDate(TOMORROW.getDate() + 1);
 
@@ -56,8 +60,6 @@ async function* generateCargo(
   senderPrivateKey: CryptoKey,
   senderCertificate: Certificate,
 ): AsyncIterable<CargoDeliveryRequest> {
-  const oneMinuteAgo = new Date();
-  oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
   // tslint:disable-next-line:no-let
   for (let i = 0; i < 10; i++) {
     console.log('Generating cargo', i);
@@ -78,6 +80,7 @@ async function generateCCA(
     'https://example.com',
     senderCertificate,
     Buffer.from([]),
+    { date: oneMinuteAgo, ttl: 86_400 },
   );
   return Buffer.from(await cca.serialize(senderPrivateKey));
 }
