@@ -1,4 +1,12 @@
 /* tslint:disable:no-console */
+
+/**
+ * NB: In the current version of this library, you have to download the TLS certificate by
+ * yourself. For example:
+ *
+ * openssl s_client -connect 192.168.43.1:21473 -showcerts </dev/null 2>/dev/null |  openssl x509 -outform PEM > /tmp/cert.pem
+ */
+
 import {
   Cargo,
   CargoCollectionAuthorization,
