@@ -160,6 +160,7 @@ async function createTlsCredentials(host: string, port: number): Promise<grpc.Ch
 }
 
 async function retrieveCertificateDer(host: string, port: number): Promise<Buffer> {
+  console.log(`Retrieving certificate for ${host}:${port}`);
   return new Promise((resolve) => {
     const tlsSocket = tls.connect({ host, port, rejectUnauthorized: false }, () => {
       const certificateDer: Buffer = tlsSocket.getPeerCertificate().raw;
