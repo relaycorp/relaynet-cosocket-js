@@ -15,14 +15,11 @@ import {
   generateRSAKeyPair,
   issueGatewayCertificate,
 } from '@relaycorp/relaynet-core';
-import * as fs from 'fs';
 
 import { CogRPCClient } from './lib/client';
 
 // Config:
-const SERVER = '192.168.43.1:21473';
-const CERT_PATH = '/tmp/cert.pem';
-const USE_TLS = true;
+const SERVER = 'https://192.168.43.95:21473';
 // End of config
 
 const FIVE_MINS_AGO = new Date();
@@ -36,7 +33,7 @@ TOMORROW.setDate(TOMORROW.getDate() + 1);
 
 async function main(): Promise<void> {
   console.log('About to create client');
-  const client = new CogRPCClient(SERVER, USE_TLS, fs.readFileSync(CERT_PATH));
+  const client = await CogRPCClient.init(SERVER);
 
   const privateGatewayKeyPair = await generateRSAKeyPair();
   const privateGatewayCertificate = await issueGatewayCertificate({
