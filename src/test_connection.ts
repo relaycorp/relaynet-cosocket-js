@@ -19,7 +19,7 @@ import {
 import { CogRPCClient } from './lib/client';
 
 // Config:
-const SERVER = 'https://192.168.43.95:21473';
+const SERVER = 'https://192.168.43.1:21473';
 // End of config
 
 const FIVE_MINS_AGO = new Date();
