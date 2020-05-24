@@ -18,9 +18,13 @@ import {
 
 import { CogRPCClient } from './lib/client';
 
-// Config:
-const SERVER = 'https://192.168.43.1:21473';
-// End of config
+if (process.argv.length !== 3) {
+  console.error('Expected exactly one CLI argument: The gRPC server IP');
+  process.exit(1);
+}
+const SERVER_HOSTNAME = process.argv[2];
+
+const SERVER_URL = `https://${SERVER_HOSTNAME}:21473`;
 
 const FIVE_MINS_AGO = new Date();
 FIVE_MINS_AGO.setMinutes(FIVE_MINS_AGO.getMinutes() - 5);
@@ -34,8 +38,8 @@ TOMORROW.setDate(TOMORROW.getDate() + 1);
 const DUMMY_CARGO_PAYLOAD = Buffer.from('a'.repeat(1024 * 512));
 
 async function main(): Promise<void> {
-  console.log('About to create client');
-  const client = await CogRPCClient.init(SERVER);
+  console.log('About to connect to', SERVER_URL);
+  const client = await CogRPCClient.init(SERVER_URL);
 
   const privateGatewayKeyPair = await generateRSAKeyPair();
   const privateGatewayCertificate = await issueGatewayCertificate({
