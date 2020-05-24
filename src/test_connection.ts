@@ -31,6 +31,8 @@ oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
 const TOMORROW = new Date();
 TOMORROW.setDate(TOMORROW.getDate() + 1);
 
+const DUMMY_CARGO_PAYLOAD = Buffer.from('a'.repeat(1024 * 512));
+
 async function main(): Promise<void> {
   console.log('About to create client');
   const client = await CogRPCClient.init(SERVER);
@@ -66,9 +68,10 @@ async function* generateCargo(
   senderCertificate: Certificate,
 ): AsyncIterable<CargoDeliveryRequest> {
   // tslint:disable-next-line:no-let
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 30; i++) {
     console.log('Generating cargo', i);
-    const cargo = new Cargo('https://example.com', senderCertificate, Buffer.from([i]), {
+    const payload = Buffer.concat([DUMMY_CARGO_PAYLOAD, Buffer.from([i])]);
+    const cargo = new Cargo('https://example.com', senderCertificate, payload, {
       date: oneMinuteAgo,
       ttl: 86_4000,
     });
