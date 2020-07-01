@@ -29,8 +29,8 @@ const SERVER_URL = `https://${SERVER_HOSTNAME}:21473`;
 const FIVE_MINS_AGO = new Date();
 FIVE_MINS_AGO.setMinutes(FIVE_MINS_AGO.getMinutes() - 5);
 
-const oneMinuteAgo = new Date();
-oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
+const TWO_MINUTES_AGO = new Date();
+TWO_MINUTES_AGO.setMinutes(TWO_MINUTES_AGO.getMinutes() - 2);
 
 const TOMORROW = new Date();
 TOMORROW.setDate(TOMORROW.getDate() + 1);
@@ -72,11 +72,11 @@ async function* generateCargo(
   senderCertificate: Certificate,
 ): AsyncIterable<CargoDeliveryRequest> {
   // tslint:disable-next-line:no-let
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 5; i++) {
     console.log('Generating cargo', i);
     const payload = Buffer.concat([DUMMY_CARGO_PAYLOAD, Buffer.from([i])]);
     const cargo = new Cargo('https://example.com', senderCertificate, payload, {
-      date: oneMinuteAgo,
+      creationDate: TWO_MINUTES_AGO,
       ttl: 86_4000,
     });
     const cargoSerialized = Buffer.from(await cargo.serialize(senderPrivateKey));
@@ -92,7 +92,7 @@ async function generateCCA(
     'https://example.com',
     senderCertificate,
     Buffer.from([]),
-    { date: oneMinuteAgo, ttl: 86_400 },
+    { creationDate: TWO_MINUTES_AGO, ttl: 86_400 },
   );
   return Buffer.from(await cca.serialize(senderPrivateKey));
 }
