@@ -22,11 +22,13 @@ const SERVER_URL = `https://${SERVER_HOSTNAME}:21473`;
 const FIVE_MINS_AGO = new Date();
 FIVE_MINS_AGO.setMinutes(FIVE_MINS_AGO.getMinutes() - 5);
 
-const TWO_MINUTES_AGO = new Date();
-TWO_MINUTES_AGO.setMinutes(TWO_MINUTES_AGO.getMinutes() - 2);
+const CREATION_DATE = new Date();
+CREATION_DATE.setMinutes(CREATION_DATE.getMinutes() - 3);
 
 const TOMORROW = new Date();
 TOMORROW.setDate(TOMORROW.getDate() + 1);
+
+const PUBLIC_GATEWAY_ADDRESS = 'https://example.com';
 
 const DUMMY_CARGO_PAYLOAD = Buffer.from('a'.repeat(1024 * 512));
 
@@ -68,8 +70,8 @@ async function* generateCargo(
   for (let i = 0; i < 5; i++) {
     console.log('Generating cargo', i);
     const payload = Buffer.concat([DUMMY_CARGO_PAYLOAD, Buffer.from([i])]);
-    const cargo = new Cargo('https://example.com', senderCertificate, payload, {
-      creationDate: TWO_MINUTES_AGO,
+    const cargo = new Cargo(PUBLIC_GATEWAY_ADDRESS, senderCertificate, payload, {
+      creationDate: CREATION_DATE,
       ttl: 86_4000,
     });
     const cargoSerialized = Buffer.from(await cargo.serialize(senderPrivateKey));
@@ -82,10 +84,10 @@ async function generateCCA(
   senderCertificate: Certificate,
 ): Promise<Buffer> {
   const cca = new CargoCollectionAuthorization(
-    'https://example.com',
+    PUBLIC_GATEWAY_ADDRESS,
     senderCertificate,
     Buffer.from([]),
-    { creationDate: TWO_MINUTES_AGO, ttl: 86_400 },
+    { creationDate: CREATION_DATE, ttl: 86_400 },
   );
   return Buffer.from(await cca.serialize(senderPrivateKey));
 }
